@@ -89,3 +89,14 @@ body {
   pointer-events: none;
   z-index: 0;
 }
+
+/* ── Dashboard infographic animations ─────────────────────────────── */
+@keyframes dash-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(1.35); }
+}
+
+@keyframes near-match-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
