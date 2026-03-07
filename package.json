@@ -8,10 +8,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "gsap": "^3.12.5",
     "next": "14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "gsap": "^3.12.5"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

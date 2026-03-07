@@ -1,0 +1,56 @@
+{
+  "lastUpdated": "2026-03-05T01:30:00Z",
+  "searchStarted": "2026-03-04",
+  "totalSearches": 2,
+  "totalPlatformsChecked": 26,
+  "exactMatches": 0,
+  "nearMatches": 0,
+  "target": {
+    "brand": "Patagonia",
+    "model": "Down Sweater",
+    "style": "84684",
+    "color": "Abundant Blue",
+    "colorCode": "ABDB",
+    "size": "Women's Small",
+    "type": "Hooded or Non-hooded"
+  },
+  "platforms": [
+    { "name": "Patagonia.com", "category": "retail", "region": "US", "url": "https://patagonia.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Worn Wear", "category": "retail", "region": "US", "url": "https://wornwear.patagonia.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "REI", "category": "retail", "region": "US", "url": "https://rei.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "REI Used", "category": "retail", "region": "US", "url": "https://rei.com/used", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Backcountry", "category": "retail", "region": "US", "url": "https://backcountry.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Moosejaw", "category": "retail", "region": "US", "url": "https://moosejaw.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Sierra", "category": "retail", "region": "US", "url": "https://sierra.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "eBay US", "category": "resale", "region": "US", "url": "https://ebay.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 40, "notes": "40 'abundant blue' results, none matching Down Sweater Women's S" },
+    { "name": "Poshmark", "category": "resale", "region": "US", "url": "https://poshmark.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Mercari", "category": "resale", "region": "US", "url": "https://mercari.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Depop", "category": "resale", "region": "US", "url": "https://depop.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "ThredUp", "category": "resale", "region": "US", "url": "https://thredup.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "near_match", "totalListings": 3, "notes": "Abundant blue Patagonia items exist, not exact model/size" },
+    { "name": "The RealReal", "category": "resale", "region": "US", "url": "https://therealreal.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "GearTrade", "category": "resale", "region": "US", "url": "https://geartrade.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "near_match", "totalListings": 145, "notes": "145 results for 'patagonia abundant blue', high volume, no exact match yet" },
+    { "name": "Switchbackr", "category": "resale", "region": "US", "url": "https://switchbackr.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Facebook Marketplace", "category": "resale", "region": "US", "url": "https://facebook.com/marketplace", "lastChecked": null, "status": "pending", "totalListings": 0, "notes": "Requires auth, not yet automated" },
+    { "name": "Vinted US", "category": "resale", "region": "US", "url": "https://vinted.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "near_match", "totalListings": 5, "notes": "Abundant blue Patagonia items confirmed, checking for exact match" },
+    { "name": "Vinted UK", "category": "resale", "region": "UK", "url": "https://vinted.co.uk", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Vinted FR", "category": "resale", "region": "FR", "url": "https://vinted.fr", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "eBay UK", "category": "resale", "region": "UK", "url": "https://ebay.co.uk", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "eBay DE", "category": "resale", "region": "DE", "url": "https://ebay.de", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "eBay AU", "category": "resale", "region": "AU", "url": "https://ebay.com.au", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Vestiaire Collective", "category": "resale", "region": "Global", "url": "https://vestiairecollective.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "near_match", "totalListings": 2, "notes": "Mentions found, verifying exact match" },
+    { "name": "Patagonia EU", "category": "retail", "region": "EU", "url": "https://eu.patagonia.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Google Shopping", "category": "aggregator", "region": "US", "url": "https://shopping.google.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 },
+    { "name": "Google Search", "category": "aggregator", "region": "Global", "url": "https://google.com", "lastChecked": "2026-03-05T01:30:00Z", "status": "no_match", "totalListings": 0 }
+  ],
+  "searchHistory": [
+    { "date": "2026-03-04", "platformsChecked": 26, "exactMatches": 0, "nearMatches": 4, "totalListingsScanned": 195 },
+    { "date": "2026-03-05", "platformsChecked": 26, "exactMatches": 0, "nearMatches": 4, "totalListingsScanned": 195 }
+  ],
+  "matches": [],
+  "nearMatchExamples": [
+    { "platform": "GearTrade", "title": "Patagonia Women's Down Sweater", "color": "Various blues", "size": "Multiple", "price": null, "url": "https://geartrade.com", "note": "145 results, manually reviewing for Abundant Blue" },
+    { "platform": "Vinted", "title": "Patagonia Abundant Blue items", "color": "Abundant Blue", "size": "Various", "price": null, "url": "https://vinted.com", "note": "Confirmed color exists on platform, filtering for exact model" },
+    { "platform": "Vestiaire Collective", "title": "Patagonia Blue Down", "color": "Blue variants", "size": "Various", "price": null, "url": "https://vestiairecollective.com", "note": "Mentions found" },
+    { "platform": "ThredUp", "title": "Patagonia Abundant Blue", "color": "Abundant Blue", "size": "Various", "price": null, "url": "https://thredup.com", "note": "Color confirmed on platform" }
+  ]
+}

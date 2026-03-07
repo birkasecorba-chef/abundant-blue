@@ -31,7 +31,7 @@ body {
   background: #080c12;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4A7C9B;
+  background: #6B8FBB;
   border-radius: 2px;
 }
 
@@ -88,4 +88,15 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
+}
+
+/* ── Dashboard infographic animations ─────────────────────────────── */
+@keyframes dash-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(1.35); }
+}
+
+@keyframes near-match-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }

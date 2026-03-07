@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'abundant-blue': '#4A7C9B',
+        'abundant-blue': '#6B8FBB',
         'deep-space': '#080c12',
       },
       fontFamily: {

@@ -2,981 +2,630 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const JACKET_FLAT  = '/paragonsports-84684-abundant-blue-flat-4000px.jpg'
-const JACKET_MODEL = '/paragonsports-84684-abundant-blue-model-4000px.jpg'
+/* ─── transparent PNGs (white bg removed) ─────────────── */
+const IMG = {
+  flat:  '/jacket-flat.png',
+  model: '/jacket-model.png',
+  back:  '/jacket-back.png',
+  alt:   '/jacket-alt.png',
+}
 
-const ACCENT   = '#4A7C9B'
-const BG_DEEP  = '#080c12'
-const BG_CARD  = '#0d1720'
-const BG_DARK  = '#070a10'
+const ACCENT = '#6B8FBB'
+const BG = '#080c12'
 
-const PLATFORMS = [
-  { name: 'eBay',                 regions: ['US', 'UK', 'DE', 'AU'] },
-  { name: 'Poshmark',             regions: ['US'] },
-  { name: 'Mercari',              regions: ['US'] },
-  { name: 'Depop',                regions: ['US', 'UK'] },
-  { name: 'ThredUp',              regions: ['US'] },
-  { name: 'The RealReal',         regions: ['US'] },
-  { name: 'GearTrade',            regions: ['US'] },
-  { name: 'Switchbackr',          regions: ['US'] },
-  { name: 'Vinted',               regions: ['US', 'UK', 'FR'] },
-  { name: 'Vestiaire Collective', regions: ['Global'] },
-  { name: 'Worn Wear',            regions: ['US'] },
-  { name: 'REI Used',             regions: ['US'] },
-  { name: 'Sierra Trading Post',  regions: ['US'] },
-  { name: 'Google Shopping',      regions: ['US'] },
-]
+/* ─── types ───────────────────────────────────────────── */
+interface SearchData {
+  lastUpdated: string; searchStarted: string; totalSearches: number
+  totalPlatformsChecked: number; exactMatches: number; nearMatches: number
+  platforms: Platform[]; searchHistory: HistoryEntry[]; nearMatchExamples: NearMatch[]
+}
+interface Platform {
+  name: string; category: string; region: string
+  status: string; totalListings: number; notes?: string; lastChecked?: string | null
+}
+interface HistoryEntry {
+  date: string; platformsChecked: number; exactMatches: number
+  nearMatches: number; totalListingsScanned: number
+}
+interface NearMatch {
+  platform: string; title: string; color: string; size: string
+  price: string | null; url: string; note: string
+}
 
-export default function AbundantBluePage() {
-  const journeyRef  = useRef<HTMLDivElement>(null)
-  const stickyRef   = useRef<HTMLDivElement>(null)
-  const flatRef     = useRef<HTMLImageElement>(null)
-  const modelRef    = useRef<HTMLImageElement>(null)
-  const [daysSince, setDaysSince] = useState(0)
-
+/* ─── animated counter ────────────────────────────────── */
+function useCounter(target: number, active: boolean, dur = 1.8) {
+  const [v, setV] = useState(0)
   useEffect(() => {
-    const start = new Date('2026-03-04')
-    setDaysSince(Math.floor((Date.now() - start.getTime()) / 86_400_000))
+    if (!active) return
+    let start: number | null = null
+    const step = (ts: number) => {
+      if (!start) start = ts
+      const p = Math.min((ts - start) / (dur * 1000), 1)
+      setV(Math.floor(p * target))
+      if (p < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [active, target, dur])
+  return v
+}
 
-    let ctx: ReturnType<typeof import('gsap')['gsap']['context']> | null = null
+/* ═══════════════════════════════════════════════════════ */
+export default function AbundantBluePage() {
+  const [data, setData] = useState<SearchData | null>(null)
+  const [statsVisible, setStatsVisible] = useState(false)
 
+  // Refs
+  const heroRef = useRef<HTMLElement>(null)
+  const heroImgRef = useRef<HTMLImageElement>(null)
+  const heroTitleRef = useRef<HTMLDivElement>(null)
+  const heroSubRef = useRef<HTMLDivElement>(null)
+  const scrollCueRef = useRef<HTMLDivElement>(null)
+
+  const showcaseRef = useRef<HTMLElement>(null)
+  const scImgFlat = useRef<HTMLImageElement>(null)
+  const scImgModel = useRef<HTMLImageElement>(null)
+  const scImgBack = useRef<HTMLImageElement>(null)
+  const scSpecs = useRef<HTMLDivElement>(null)
+  const scFill = useRef<HTMLDivElement>(null)
+  const scWorn = useRef<HTMLDivElement>(null)
+  const scDetail = useRef<HTMLDivElement>(null)
+
+  const statsRef = useRef<HTMLElement>(null)
+  const platformRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const nearRef = useRef<HTMLDivElement>(null)
+
+  // Fetch search data
+  useEffect(() => {
+    fetch('/search-data.json').then(r => r.json()).then(setData).catch(() => {})
+  }, [])
+
+  // GSAP animations
+  useEffect(() => {
+    let ctx: any = null
     const init = async () => {
-      const gsapMod                    = await import('gsap')
-      const gsap                       = gsapMod.gsap
-      const { ScrollTrigger }          = await import('gsap/ScrollTrigger')
+      const { gsap } = await import('gsap')
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
       gsap.registerPlugin(ScrollTrigger)
 
       ctx = gsap.context(() => {
-        const isMobile = window.innerWidth < 768
 
-        // ── Scroll indicator bounce ────────────────────────────────
-        gsap.to('.scroll-dot-inner', {
-          y: 10,
-          duration: 1.1,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1,
-        })
-
-        // ── Hero jacket idle float ─────────────────────────────────
-        gsap.to('.hero-jacket-wrap', {
-          y: -20,
-          duration: 3.4,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1,
-        })
-
-        // ── Hero jacket subtle breathe ─────────────────────────────
-        gsap.to('.hero-jacket-wrap', {
-          scale: 1.04,
-          duration: 5.2,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1,
-          delay: 1.8,
-        })
-
-        // ── Hero entrance timeline ─────────────────────────────────
-        const heroTl = gsap.timeline({ delay: 0.15 })
-        heroTl
-          .from('.hero-jacket-wrap',  { scale: 0.82, opacity: 0, duration: 1.4, ease: 'power3.out' })
-          .from('.hero-eyebrow',      { y: 20,  opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.75')
-          .from('.hero-title',        { y: 50,  opacity: 0, duration: 0.95, ease: 'power3.out' }, '-=0.5')
-          .from('.hero-subtitle',     { y: 24,  opacity: 0, duration: 0.65, ease: 'power3.out' }, '-=0.45')
-          .from('.hero-scroll-ind',   { opacity: 0, duration: 0.45 }, '-=0.15')
-
-        // ── Hero content fades out on scroll ──────────────────────
-        gsap.to('.hero-section-content', {
-          opacity: 0,
-          y: -55,
+        /* ── HERO: pin + zoom jacket + reveal text ── */
+        const heroTl = gsap.timeline({
           scrollTrigger: {
-            trigger: '.hero-section',
-            start: '18% top',
-            end: '65% top',
-            scrub: 1.2,
-          },
-        })
-
-        // ── Hero jacket pulls back slightly on scroll ──────────────
-        gsap.to('.hero-jacket-wrap', {
-          y: 60,
-          scale: 0.88,
-          scrollTrigger: {
-            trigger: '.hero-section',
+            trigger: heroRef.current,
             start: 'top top',
-            end: 'bottom top',
-            scrub: 1.8,
+            end: '+=200%',
+            pin: true,
+            scrub: 1.5,
+            anticipatePin: 1,
           },
         })
+        // Jacket grows
+        heroTl.to(heroImgRef.current, { scale: 1.4, duration: 1, ease: 'none' }, 0)
+        // Title in
+        heroTl.fromTo(heroTitleRef.current,
+          { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.2, ease: 'none' }, 0)
+        // Title out
+        heroTl.to(heroTitleRef.current,
+          { opacity: 0, y: -25, duration: 0.15, ease: 'none' }, 0.3)
+        // Subtitle in
+        heroTl.fromTo(heroSubRef.current,
+          { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.15, ease: 'none' }, 0.5)
+        // Subtitle out
+        heroTl.to(heroSubRef.current,
+          { opacity: 0, y: -15, duration: 0.12, ease: 'none' }, 0.75)
+        // Scroll cue out
+        heroTl.to(scrollCueRef.current, { opacity: 0, duration: 0.08, ease: 'none' }, 0)
 
-        // ═══════════════════════════════════════════════════════════
-        //  3-D JOURNEY SECTION
-        // ═══════════════════════════════════════════════════════════
-        const flat  = flatRef.current
-        const model = modelRef.current
-        const journey = journeyRef.current
-
-        if (!flat || !model || !journey) return
-
-        // Set perspective on the sticky container
-        if (stickyRef.current) {
-          gsap.set(stickyRef.current, { perspective: 1100 })
-        }
-
-        // Initial states for scene texts (all hidden except scene 1)
-        gsap.set('.j-scene-2', { opacity: 0, y: 32 })
-        gsap.set('.j-scene-3', { opacity: 0, y: 32 })
-        gsap.set('.j-scene-4', { opacity: 0, y: 32 })
-        gsap.set('.j-scene-5', { opacity: 0, y: 32 })
-
-        // Scale values (mobile gets gentler transforms)
-        const s2 = isMobile ? 2.2  : 3.8
-        const s3 = isMobile ? 1.9  : 3.1
-        const s4 = isMobile ? 2.8  : 4.6
-        const ry = isMobile ? 5    : 12
-        const rx = isMobile ? 2    : 5
-
-        // ── Main journey timeline ──────────────────────────────────
-        // Total ~4 seconds; scrub maps this to 400vh of scroll
-        const tl = gsap.timeline({
+        /* ── SHOWCASE: pin + 5 scenes ── */
+        const showTl = gsap.timeline({
           scrollTrigger: {
-            trigger: journey,
+            trigger: showcaseRef.current,
             start: 'top top',
-            end: 'bottom bottom',
-            scrub: 2.8,
+            end: '+=500%',
+            pin: true,
+            scrub: 1.5,
+            anticipatePin: 1,
           },
         })
 
-        // ── Phase 0→1 · Scene 1 → Scene 2 (Zoom In) ──────────────
-        // Jacket zooms toward viewer with slight 3D tilt
-        tl
-          .to(flat, {
-            scale: s2,
-            rotateY: ry,
-            rotateX: -rx,
-            duration: 1,
-            ease: 'none',
-          }, 0)
-          // Scene 1 exit
-          .to('.j-scene-1', { opacity: 0, y: -28, duration: 0.35 }, 0.5)
-          // Scene 2 entrance
-          .to('.j-scene-2', { opacity: 1, y: 0,  duration: 0.35 }, 0.75)
+        // Scene 1 (0–0.18): Specs slide in from left
+        showTl.fromTo(scSpecs.current,
+          { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.16, ease: 'none' }, 0.02)
 
-        // ── Phase 1→2 · Scene 2 → Scene 3 (Pan + swap to model) ──
-        // Jacket pans left with counter-rotation, then model appears
-        tl
-          .to('.j-scene-2', { opacity: 0, y: -28, duration: 0.35 }, 1.45)
-          .to(flat, {
-            rotateY: -(ry * 1.3),
-            rotateX: rx * 0.8,
-            x: isMobile ? '7%' : '12%',
-            scale: s3,
-            duration: 1,
-            ease: 'none',
-          }, 1)
-          // Cross-fade to model image
-          .to(model, { opacity: 1, duration: 0.25, ease: 'none' }, 1.55)
-          .to(flat,  { opacity: 0, duration: 0.25, ease: 'none' }, 1.55)
-          // Scene 3 entrance
-          .to('.j-scene-3', { opacity: 1, y: 0, duration: 0.35 }, 1.75)
+        // Scene 2 (0.2–0.4): Specs out, jacket zooms + rotates, fill text in
+        showTl.to(scSpecs.current,
+          { opacity: 0, x: -60, duration: 0.1, ease: 'none' }, 0.2)
+        showTl.to(scImgFlat.current,
+          { scale: 2, rotateY: -12, duration: 0.2, ease: 'none' }, 0.2)
+        showTl.fromTo(scFill.current,
+          { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.12, ease: 'none' }, 0.35)
 
-        // ── Phase 2→3 · Scene 3 → Scene 4 (Detail close-up) ──────
-        // Extreme zoom + pan up to collar / logo zone
-        tl
-          .to('.j-scene-3', { opacity: 0, y: -28, duration: 0.35 }, 2.45)
-          .to(model, {
-            scale: s4,
-            rotateY: ry * 0.5,
-            rotateX: -(rx * 1.2),
-            x: 0,
-            y: isMobile ? '-16%' : '-22%',
-            duration: 1,
-            ease: 'none',
-          }, 2)
-          // Scene 4 entrance
-          .to('.j-scene-4', { opacity: 1, y: 0, duration: 0.35 }, 2.7)
+        // Scene 3 (0.45–0.65): Fill out, flat fades, model fades in, worn text
+        showTl.to(scFill.current,
+          { opacity: 0, x: 50, duration: 0.08, ease: 'none' }, 0.46)
+        showTl.to(scImgFlat.current,
+          { opacity: 0, scale: 2, duration: 0.1, ease: 'none' }, 0.48)
+        showTl.fromTo(scImgModel.current,
+          { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.12, ease: 'none' }, 0.55)
+        showTl.fromTo(scWorn.current,
+          { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.1, ease: 'none' }, 0.62)
 
-        // ── Phase 3→4 · Scene 4 → Scene 5 (Pull back) ────────────
-        // Everything returns to neutral, cross-fade back to flat
-        tl
-          .to('.j-scene-4', { opacity: 0, y: -28, duration: 0.35 }, 3.35)
-          .to(model, {
-            scale: 1,
-            rotateY: 0,
-            rotateX: 0,
-            x: 0,
-            y: 0,
-            duration: 1.1,
-            ease: 'none',
-          }, 3)
-          // Cross-fade back to flat jacket
-          .to(flat,  { opacity: 1, scale: 1, rotateY: 0, rotateX: 0, x: 0, y: 0, duration: 0.3, ease: 'none' }, 3.75)
-          .to(model, { opacity: 0, duration: 0.3, ease: 'none' }, 3.75)
-          // Scene 5 entrance
-          .to('.j-scene-5', { opacity: 1, y: 0, duration: 0.45 }, 3.85)
+        // Scene 4 (0.7–0.88): Worn out, model out, back in zoomed
+        showTl.to(scWorn.current,
+          { opacity: 0, x: 50, duration: 0.06, ease: 'none' }, 0.72)
+        showTl.to(scImgModel.current,
+          { opacity: 0, duration: 0.08, ease: 'none' }, 0.74)
+        showTl.fromTo(scImgBack.current,
+          { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1.6, duration: 0.12, ease: 'none' }, 0.8)
+        showTl.fromTo(scDetail.current,
+          { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.08, ease: 'none' }, 0.86)
 
-        // ── Progress dots driven by scroll ────────────────────────
-        const dotActivate = (active: number) => {
-          for (let i = 1; i <= 5; i++) {
-            const dot = document.querySelector(`.j-dot-${i}`) as HTMLElement | null
-            if (dot) dot.style.background = i === active ? ACCENT : 'rgba(255,255,255,0.18)'
-          }
-        }
+        // Scene 5 (0.92–1): Everything out, flat jacket returns
+        showTl.to(scDetail.current, { opacity: 0, duration: 0.05, ease: 'none' }, 0.93)
+        showTl.to(scImgBack.current, { opacity: 0, duration: 0.06, ease: 'none' }, 0.93)
+        showTl.fromTo(scImgFlat.current,
+          { opacity: 0, scale: 2, rotateY: -12 },
+          { opacity: 1, scale: 1, rotateY: 0, duration: 0.08, ease: 'none' }, 0.94)
 
-        ;[1, 2, 3, 4, 5].forEach((scene) => {
-          const starts = [0, 0.2, 0.4, 0.6, 0.82]
-          const ends   = [0.2, 0.4, 0.6, 0.82, 1.0]
+        /* ── STATS counter trigger ── */
+        if (statsRef.current) {
           ScrollTrigger.create({
-            trigger: journey,
-            start: `${starts[scene - 1] * 100}% top`,
-            end:   `${ends[scene - 1] * 100}% top`,
-            onEnter:      () => dotActivate(scene),
-            onEnterBack:  () => dotActivate(scene),
+            trigger: statsRef.current,
+            start: 'top 75%',
+            onEnter: () => setStatsVisible(true),
           })
-        })
+        }
 
-        // ══════════════════════════════════════════════════════════
-        //  BELOW-JOURNEY SECTIONS (unchanged animations)
-        // ══════════════════════════════════════════════════════════
-        gsap.from('.stat-item', {
-          y: 60, opacity: 0, stagger: 0.15, duration: 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: '.stats-row', start: 'top 82%' },
-        })
+        /* ── PLATFORM CARDS stagger ── */
+        if (platformRef.current) {
+          gsap.fromTo(platformRef.current.querySelectorAll('.p-card'),
+            { opacity: 0, y: 30 },
+            { opacity: 1, y: 0, stagger: 0.04, ease: 'power2.out', duration: 0.6,
+              scrollTrigger: { trigger: platformRef.current, start: 'top 82%' } })
+        }
 
-        gsap.from('.story-left > *', {
-          y: 40, opacity: 0, stagger: 0.12, duration: 0.85, ease: 'power3.out',
-          scrollTrigger: { trigger: '.story-grid', start: 'top 78%' },
-        })
+        /* ── TIMELINE stagger ── */
+        if (timelineRef.current) {
+          gsap.fromTo(timelineRef.current.querySelectorAll('.t-item'),
+            { opacity: 0, x: -20 },
+            { opacity: 1, x: 0, stagger: 0.12, ease: 'power2.out',
+              scrollTrigger: { trigger: timelineRef.current, start: 'top 80%' } })
+        }
 
-        gsap.from('.story-card', {
-          x: 50, opacity: 0, stagger: 0.16, duration: 0.85, ease: 'power3.out',
-          scrollTrigger: { trigger: '.story-grid', start: 'top 74%' },
-        })
-
-        gsap.from('.results-header > *', {
-          y: 35, opacity: 0, stagger: 0.1, duration: 0.8, ease: 'power3.out',
-          scrollTrigger: { trigger: '.results-section', start: 'top 80%' },
-        })
-
-        gsap.from('.status-card', {
-          scale: 0.96, opacity: 0, duration: 0.85, ease: 'power3.out',
-          scrollTrigger: { trigger: '.status-card', start: 'top 85%' },
-        })
-
-        gsap.from('.platform-card', {
-          y: 28, opacity: 0, stagger: 0.045, duration: 0.55, ease: 'power2.out',
-          scrollTrigger: { trigger: '.platforms-grid', start: 'top 80%' },
-        })
-
-        gsap.from('.footer-inner', {
-          opacity: 0, duration: 0.9,
-          scrollTrigger: { trigger: 'footer', start: 'top 92%' },
-        })
-
-      }) // gsap.context()
+        /* ── NEAR MATCH cards ── */
+        if (nearRef.current) {
+          gsap.fromTo(nearRef.current.querySelectorAll('.n-card'),
+            { opacity: 0, scale: 0.95, y: 15 },
+            { opacity: 1, scale: 1, y: 0, stagger: 0.08, ease: 'power2.out',
+              scrollTrigger: { trigger: nearRef.current, start: 'top 82%' } })
+        }
+      })
     }
-
     init()
-    return () => { ctx?.revert() }
-  }, [])
+    return () => ctx?.revert()
+  }, [data])
 
+  // Computed values
+  const daysSince = data
+    ? Math.max(1, Math.floor((Date.now() - new Date(data.searchStarted).getTime()) / 86_400_000))
+    : 1
+  const totalScanned = data?.searchHistory?.reduce((s, h) => s + h.totalListingsScanned, 0) ?? 0
+
+  const statusDot = (s: string) =>
+    s === 'exact_match' ? '#22c55e' : s === 'near_match' ? '#f59e0b' : s === 'pending' ? '#6b7280' : '#1e3a4f'
+  const statusText = (s: string) =>
+    s === 'exact_match' ? 'MATCH' : s === 'near_match' ? 'CLOSE' : s === 'pending' ? 'PENDING' : 'CLEAR'
+
+  /* ═════ RENDER ═════ */
   return (
-    <div style={{ background: BG_DEEP, color: 'white', overflowX: 'hidden', minHeight: '100vh' }}>
+    <div style={{ background: BG, color: '#e8e8e8', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
 
-      {/* ════════════════════════════ HERO ════════════════════════════════ */}
-      <section
-        className="hero-section"
-        style={{ position: 'relative', height: '100vh', overflow: 'hidden', background: BG_DEEP, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        {/* Dot grid texture */}
+      {/* ══════════════════════════════════════════════
+          PHASE 1: HERO — Jacket on dark bg
+          ══════════════════════════════════════════════ */}
+      <section ref={heroRef} style={{
+        position: 'relative', height: '100vh',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden', background: BG,
+      }}>
+        {/* Subtle radial glow behind jacket */}
         <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(circle, rgba(74,124,155,0.065) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }} />
-
-        {/* Ambient glows */}
-        <div style={{
-          position: 'absolute', top: '-12%', right: '-8%',
-          width: '52%', height: '68%',
-          background: 'radial-gradient(ellipse, rgba(74,124,155,0.11) 0%, transparent 62%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-8%', left: '-4%',
-          width: '38%', height: '48%',
-          background: 'radial-gradient(ellipse, rgba(74,124,155,0.07) 0%, transparent 65%)',
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse 60% 65% at 50% 50%, #0e2035 0%, ${BG} 70%)`,
           pointerEvents: 'none',
         }} />
 
-        {/* ── Hero content ── */}
-        <div
-          className="hero-section-content"
+        {/* Jacket image — transparent PNG, no blend mode needed */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={heroImgRef}
+          src={IMG.flat}
+          alt="Patagonia Down Sweater — Abundant Blue"
           style={{
-            position: 'relative', zIndex: 10,
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            textAlign: 'center', padding: '0 1.5rem', width: '100%',
+            position: 'relative', zIndex: 5,
+            width: 'clamp(280px, 55vmin, 620px)',
+            height: 'clamp(280px, 55vmin, 620px)',
+            objectFit: 'contain',
+            transformOrigin: 'center center',
+            filter: 'drop-shadow(0 20px 60px rgba(74, 124, 155, 0.15))',
           }}
-        >
-          {/* Jacket — the star of the hero */}
-          <div
-            className="hero-jacket-wrap"
-            style={{
-              position: 'relative',
-              width: 'clamp(240px, 44vw, 540px)',
-              marginBottom: '2.8rem',
-              willChange: 'transform',
-            }}
-          >
-            <img
-              src={JACKET_FLAT}
-              alt="Patagonia Down Sweater — Abundant Blue"
-              style={{ width: '100%', height: 'auto', display: 'block' }}
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-            />
-            {/* Vignette — hides white product-photo background */}
-            <div style={{
-              position: 'absolute',
-              inset: '-8%',
-              background: 'radial-gradient(ellipse 48% 48% at center, transparent 48%, rgba(8,12,18,1) 74%)',
-              pointerEvents: 'none',
-            }} />
-          </div>
+        />
 
-          {/* Text */}
-          <p className="hero-eyebrow" style={{
-            color: ACCENT, fontSize: '0.68rem', letterSpacing: '0.48em',
-            textTransform: 'uppercase', marginBottom: '1.1rem', fontWeight: 500,
+        {/* Title */}
+        <div ref={heroTitleRef} style={{
+          position: 'absolute', top: '15%', left: 0, right: 0,
+          textAlign: 'center', zIndex: 20, opacity: 0,
+        }}>
+          <h1 style={{
+            fontSize: 'clamp(1.8rem, 4.5vw, 4.2rem)',
+            fontWeight: 200, letterSpacing: '-0.02em', color: '#fff', margin: 0,
           }}>
-            Patagonia Down Sweater &nbsp;·&nbsp; Women&#39;s Small &nbsp;·&nbsp; Discontinued
-          </p>
-
-          <h1 className="hero-title" style={{
-            fontSize: 'clamp(2.6rem, 9vw, 6.5rem)',
-            fontWeight: 800, lineHeight: 0.9,
-            letterSpacing: '-0.03em', marginBottom: '1.4rem', color: 'white',
-          }}>
-            The Hunt for
-            <br />
-            <span style={{ color: ACCENT }}>Abundant Blue</span>
+            The Hunt for Abundant Blue
           </h1>
+        </div>
 
-          <p className="hero-subtitle" style={{
-            fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
-            color: 'rgba(255,255,255,0.42)', fontWeight: 300,
-            maxWidth: '420px', lineHeight: 1.68,
+        {/* Subtitle */}
+        <div ref={heroSubRef} style={{
+          position: 'absolute', bottom: '18%', left: 0, right: 0,
+          textAlign: 'center', zIndex: 20, opacity: 0,
+        }}>
+          <p style={{
+            fontSize: 'clamp(0.7rem, 1.2vw, 0.9rem)',
+            fontWeight: 300, letterSpacing: '0.18em',
+            color: ACCENT, textTransform: 'uppercase', margin: 0,
           }}>
-            One colorway. Discontinued. Searched daily across 14 resale platforms.
+            Patagonia Down Sweater&ensp;·&ensp;Style 84684&ensp;·&ensp;Discontinued
           </p>
         </div>
 
         {/* Scroll indicator */}
-        <div className="hero-scroll-ind" style={{
-          position: 'absolute', bottom: '2rem', left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.65rem',
-          zIndex: 20,
+        <div ref={scrollCueRef} style={{
+          position: 'absolute', bottom: '5%', left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+          color: ACCENT, opacity: 0.4, zIndex: 20,
         }}>
-          <span style={{
-            color: 'rgba(255,255,255,0.18)', fontSize: '0.58rem',
-            letterSpacing: '0.45em', textTransform: 'uppercase',
-          }}>
-            Scroll
-          </span>
-          <div style={{
-            width: '1.4rem', height: '2.4rem',
-            border: '1px solid rgba(255,255,255,0.13)', borderRadius: '1rem',
-            display: 'flex', alignItems: 'flex-start',
-            justifyContent: 'center', paddingTop: '0.35rem',
-          }}>
-            <div
-              className="scroll-dot-inner"
-              style={{
-                width: '0.22rem', height: '0.5rem',
-                background: 'rgba(255,255,255,0.4)', borderRadius: '0.25rem',
-              }}
-            />
-          </div>
+          <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll</span>
+          <svg width="14" height="22" viewBox="0 0 14 22" fill="none">
+            <rect x="1" y="1" width="12" height="18" rx="6" stroke={ACCENT} strokeWidth="1.2"/>
+            <circle cx="7" cy="6" r="2" fill={ACCENT}>
+              <animate attributeName="cy" from="5" to="13" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" from="1" to="0" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
         </div>
+      </section>
 
-        {/* Bottom gradient fade into journey */}
+      {/* ══════════════════════════════════════════════
+          PHASE 2: PRODUCT SHOWCASE — 5 pinned scroll scenes
+          ══════════════════════════════════════════════ */}
+      <section ref={showcaseRef} style={{
+        position: 'relative', height: '100vh',
+        background: BG, overflow: 'hidden',
+      }}>
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '28%',
-          background: `linear-gradient(to bottom, transparent, ${BG_DEEP})`,
-          pointerEvents: 'none',
-        }} />
-      </section>
-
-      {/* ══════════════════════ 3-D JOURNEY ══════════════════════════════ */}
-      {/* 500 vh tall wrapper — sticky inner provides the pinned canvas    */}
-      <div ref={journeyRef} style={{ height: '500vh', background: BG_DEEP }}>
-        <div
-          ref={stickyRef}
-          style={{
-            position: 'sticky', top: 0,
-            height: '100vh', overflow: 'hidden',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          {/* ── Image layers (stacked) ── */}
-          <div style={{
-            position: 'relative',
-            width: 'clamp(260px, 52vw, 600px)',
-            aspectRatio: '1 / 1',
-            zIndex: 1,
-          }}>
-            {/* Flat jacket — Scene 1, 2, 5 */}
-            <img
-              ref={flatRef}
-              src={JACKET_FLAT}
-              alt="Patagonia Down Sweater Abundant Blue — flat"
-              style={{
-                position: 'absolute', inset: 0,
-                width: '100%', height: '100%', objectFit: 'contain',
-                transformOrigin: 'center center',
-                willChange: 'transform, opacity',
-              }}
-            />
-            {/* Model shot — Scene 3, 4 */}
-            <img
-              ref={modelRef}
-              src={JACKET_MODEL}
-              alt="Model wearing Patagonia Abundant Blue"
-              style={{
-                position: 'absolute', inset: 0,
-                width: '100%', height: '100%', objectFit: 'contain',
-                transformOrigin: 'center center',
-                willChange: 'transform, opacity',
-                opacity: 0,
-              }}
-            />
-          </div>
-
-          {/* Radial vignette — hides white bg, frames jacket on dark canvas */}
+          position: 'relative', width: '100%', height: '100vh',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {/* Radial glow */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'radial-gradient(ellipse 58% 58% at center, transparent 28%, rgba(8,12,18,0.88) 68%, rgba(8,12,18,1) 82%)',
-            pointerEvents: 'none', zIndex: 2,
+            background: `radial-gradient(ellipse 65% 70% at 50% 50%, #0e2035 0%, ${BG} 70%)`,
           }} />
 
-          {/* Top + bottom gradient reinforcement */}
+          {/* Image stack */}
           <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, rgba(8,12,18,0.45) 0%, transparent 20%, transparent 80%, rgba(8,12,18,0.6) 100%)',
-            pointerEvents: 'none', zIndex: 3,
-          }} />
-
-          {/* ── Scene 1: The Jacket (initial) ── */}
-          <div className="j-scene-1" style={{
-            position: 'absolute',
-            bottom: '11%', left: '50%',
-            transform: 'translateX(-50%)',
-            textAlign: 'center',
-            zIndex: 10, pointerEvents: 'none',
+            position: 'relative', zIndex: 5,
+            width: 'clamp(240px, 48vmin, 560px)',
+            height: 'clamp(240px, 48vmin, 560px)',
+            perspective: '1400px',
           }}>
-            <p style={{
-              color: ACCENT, fontSize: '0.62rem', letterSpacing: '0.42em',
-              textTransform: 'uppercase', marginBottom: '0.7rem', fontWeight: 500,
-            }}>
-              01 &nbsp;—&nbsp; The Jacket
-            </p>
-            <h2 style={{
-              fontSize: 'clamp(1.7rem, 3.2vw, 2.7rem)',
-              fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.05,
-            }}>
-              Patagonia Down Sweater
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.38)', marginTop: '0.6rem', fontSize: '0.88rem' }}>
-              Abundant Blue &nbsp;·&nbsp; Women&#39;s Small &nbsp;·&nbsp; Discontinued
-            </p>
+            {/* Flat */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img ref={scImgFlat} src={IMG.flat} alt="Jacket flat"
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'contain', transformOrigin: 'center center',
+                filter: 'drop-shadow(0 15px 50px rgba(74,124,155,0.12))',
+              }} />
+            {/* Model */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img ref={scImgModel} src={IMG.model} alt="Model wearing jacket"
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'contain', opacity: 0, transformOrigin: 'center center',
+                filter: 'drop-shadow(0 15px 50px rgba(74,124,155,0.12))',
+              }} />
+            {/* Back */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img ref={scImgBack} src={IMG.back} alt="Jacket back"
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'contain', opacity: 0, transformOrigin: 'center center',
+                filter: 'drop-shadow(0 15px 50px rgba(74,124,155,0.12))',
+              }} />
           </div>
 
-          {/* ── Scene 2: Construction — left side ── */}
-          <div className="j-scene-2" style={{
-            position: 'absolute',
-            top: '50%',
-            left: 'clamp(1.5rem, 6%, 5rem)',
-            transform: 'translateY(-50%)',
-            maxWidth: 'min(260px, 32vw)',
-            zIndex: 10, pointerEvents: 'none',
+          {/* Scene text: Specs */}
+          <div ref={scSpecs} style={{
+            position: 'absolute', left: '7vw', top: '50%', transform: 'translateY(-50%)',
+            opacity: 0, zIndex: 30, display: 'flex', flexDirection: 'column', gap: 16,
           }}>
-            <p style={{
-              color: ACCENT, fontSize: '0.6rem', letterSpacing: '0.42em',
-              textTransform: 'uppercase', marginBottom: '0.8rem', fontWeight: 500,
-            }}>
-              02 &nbsp;—&nbsp; Construction
-            </p>
-            <h2 style={{
-              fontSize: 'clamp(1.4rem, 2.4vw, 2.1rem)',
-              fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '0.85rem',
-            }}>
-              800-Fill
-              <br />Traceable Down
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', lineHeight: 1.68 }}>
-              Recycled ripstop nylon shell. Polartec® Powerstretch® cuffs. Built for decades — if you can find it.
-            </p>
-          </div>
-
-          {/* ── Scene 3: As Worn — right side ── */}
-          <div className="j-scene-3" style={{
-            position: 'absolute',
-            top: '50%',
-            right: 'clamp(1.5rem, 6%, 5rem)',
-            transform: 'translateY(-50%)',
-            maxWidth: 'min(250px, 32vw)',
-            textAlign: 'right',
-            zIndex: 10, pointerEvents: 'none',
-          }}>
-            <p style={{
-              color: ACCENT, fontSize: '0.6rem', letterSpacing: '0.42em',
-              textTransform: 'uppercase', marginBottom: '0.8rem', fontWeight: 500,
-            }}>
-              03 &nbsp;—&nbsp; As Worn
-            </p>
-            <h2 style={{
-              fontSize: 'clamp(1.4rem, 2.4vw, 2.1rem)',
-              fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '0.85rem',
-            }}>
-              Worn.
-              <br />Remembered.
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', lineHeight: 1.68 }}>
-              Some jackets become part of you. The color, the fit, the weight on your shoulders — irreplaceable.
-            </p>
-          </div>
-
-          {/* ── Scene 4: The Colorway — bottom left with callout lines ── */}
-          <div className="j-scene-4" style={{
-            position: 'absolute',
-            bottom: '9%',
-            left: 'clamp(1.5rem, 6%, 5rem)',
-            maxWidth: 'min(290px, 40vw)',
-            zIndex: 10, pointerEvents: 'none',
-          }}>
-            <p style={{
-              color: ACCENT, fontSize: '0.6rem', letterSpacing: '0.42em',
-              textTransform: 'uppercase', marginBottom: '0.8rem', fontWeight: 500,
-            }}>
-              04 &nbsp;—&nbsp; The Colorway
-            </p>
-            <h2 style={{
-              fontSize: 'clamp(1.4rem, 2.4vw, 2.1rem)',
-              fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '0.85rem',
-            }}>
-              Abundant Blue
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', lineHeight: 1.68, marginBottom: '1.1rem' }}>
-              A teal-blue that existed for one season. Quietly retired. Not reproduced. Not close enough to anything else.
-            </p>
-            {/* Detail callouts */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-              {['Patagonia logo · Chest, center', 'Polartec® cuffs', 'Full-zip with chin guard'].map((item) => (
-                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                  <div style={{ width: '1.6rem', height: '1px', background: ACCENT, flexShrink: 0 }} />
-                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.7rem', letterSpacing: '0.08em' }}>
-                    {item}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Scene 5: The Search ── */}
-          <div className="j-scene-5" style={{
-            position: 'absolute',
-            bottom: '10%', left: '50%',
-            transform: 'translateX(-50%)',
-            textAlign: 'center',
-            maxWidth: '420px',
-            zIndex: 10, pointerEvents: 'none',
-          }}>
-            <p style={{
-              color: ACCENT, fontSize: '0.6rem', letterSpacing: '0.42em',
-              textTransform: 'uppercase', marginBottom: '0.8rem', fontWeight: 500,
-            }}>
-              05 &nbsp;—&nbsp; The Search
-            </p>
-            <h2 style={{
-              fontSize: 'clamp(1.7rem, 3vw, 2.6rem)',
-              fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.08, marginBottom: '0.75rem',
-            }}>
-              14 Platforms. Every Day.
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.88rem', lineHeight: 1.68 }}>
-              Automated. Persistent. Ready for the moment it surfaces.
-            </p>
-          </div>
-
-          {/* Progress dots — right edge */}
-          <div style={{
-            position: 'absolute', right: '2.2%', top: '50%',
-            transform: 'translateY(-50%)',
-            display: 'flex', flexDirection: 'column', gap: '0.7rem',
-            zIndex: 20,
-          }}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <div
-                key={n}
-                className={`j-dot-${n}`}
-                style={{
-                  width: n === 1 ? '0.32rem' : '0.28rem',
-                  height: n === 1 ? '0.32rem' : '0.28rem',
-                  borderRadius: '50%',
-                  background: n === 1 ? ACCENT : 'rgba(255,255,255,0.18)',
-                  transition: 'background 0.4s ease',
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Scene label top-right */}
-          <div style={{
-            position: 'absolute', top: '2rem', right: '3.5%',
-            zIndex: 20, display: 'flex', alignItems: 'center', gap: '0.5rem',
-          }}>
-            <div style={{
-              width: '0.35rem', height: '0.35rem', borderRadius: '50%',
-              background: '#4ade80', animation: 'green-pulse 2.2s ease-in-out infinite',
-            }} />
-            <span style={{
-              color: 'rgba(255,255,255,0.22)', fontSize: '0.6rem',
-              letterSpacing: '0.3em', textTransform: 'uppercase',
-            }}>
-              Scroll to explore
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* ════════════════════════════ STORY ══════════════════════════════ */}
-      <section style={{ padding: '7rem 1.5rem', background: BG_DEEP }}>
-        <div style={{ maxWidth: '75rem', margin: '0 auto' }}>
-
-          {/* Stats */}
-          <div
-            className="stats-row"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '2rem',
-              marginBottom: '6rem',
-              paddingBottom: '6rem',
-              borderBottom: '1px solid rgba(255,255,255,0.05)',
-            }}
-          >
-            {[
-              { value: '14',    label: 'Platforms Scanned',  color: 'white' },
-              { value: 'Daily', label: 'Search Frequency',   color: ACCENT },
-              { value: '0',     label: 'Matches Found',      color: 'rgba(255,255,255,0.2)' },
-            ].map((s, i) => (
-              <div key={i} className="stat-item" style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: 'clamp(2.5rem, 6vw, 5rem)',
-                  fontWeight: 800, letterSpacing: '-0.03em',
-                  marginBottom: '0.5rem', color: s.color,
-                  fontVariantNumeric: 'tabular-nums',
-                }}>
-                  {s.value}
-                </div>
-                <div style={{
-                  color: 'rgba(255,255,255,0.28)', fontSize: '0.65rem',
-                  letterSpacing: '0.32em', textTransform: 'uppercase',
-                }}>
-                  {s.label}
-                </div>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT }}>Specifications</span>
+            {[['Brand','Patagonia'],['Style','84684'],['Color','Abundant Blue'],['Code','ABDB'],
+              ['Size',"Women's Small"],['Fill','800-Fill Down'],['Status','Discontinued']].map(([k,v]) => (
+              <div key={k} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: '0.55rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: `${ACCENT}66` }}>{k}</span>
+                <span style={{ fontSize: '0.82rem', fontWeight: 300 }}>{v}</span>
               </div>
             ))}
           </div>
 
-          {/* Story grid */}
-          <div
-            className="story-grid"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '4rem',
-              alignItems: 'start',
-            }}
-          >
-            {/* Left: Narrative */}
-            <div className="story-left">
-              <p style={{
-                color: ACCENT, fontSize: '0.65rem', letterSpacing: '0.42em',
-                textTransform: 'uppercase', marginBottom: '1.4rem', fontWeight: 500,
-              }}>
-                The Story
-              </p>
-              <h2 style={{
-                fontSize: 'clamp(1.9rem, 3.5vw, 3rem)',
-                fontWeight: 700, lineHeight: 1.1,
-                letterSpacing: '-0.025em', marginBottom: '1.75rem',
-              }}>
-                Some things are worth
-                <br />
-                <span style={{ color: ACCENT }}>hunting for.</span>
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.54)', fontSize: '1.05rem', lineHeight: 1.78, marginBottom: '1.25rem' }}>
-                The Patagonia Down Sweater in Abundant Blue isn&#39;t just a jacket. It&#39;s a specific
-                shade — a teal-blue that Patagonia produced for a limited season before quietly
-                retiring the colorway.
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.54)', fontSize: '1.05rem', lineHeight: 1.78, marginBottom: '1.25rem' }}>
-                Women&#39;s Small. That&#39;s the exact spec. Not{' '}
-                <em style={{ color: 'rgba(255,255,255,0.4)' }}>&ldquo;any blue Patagonia.&rdquo;</em>{' '}
-                Not <em style={{ color: 'rgba(255,255,255,0.4)' }}>&ldquo;close enough.&rdquo;</em> The
-                right jacket, the right colorway, the right size.
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.54)', fontSize: '1.05rem', lineHeight: 1.78 }}>
-                So we built a scanner. And we wait.
-              </p>
-            </div>
+          {/* Scene text: Fill */}
+          <div ref={scFill} style={{
+            position: 'absolute', right: '7vw', top: '50%', transform: 'translateY(-50%)',
+            opacity: 0, zIndex: 30, textAlign: 'right', maxWidth: 280,
+          }}>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Fill Power</span>
+            <span style={{ fontSize: 'clamp(1.8rem, 3vw, 3rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>800-Fill</span>
+            <span style={{ fontSize: '0.88rem', fontWeight: 300, color: ACCENT, display: 'block', marginBottom: 8 }}>Traceable Down</span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>Responsibly sourced. Ethically certified. Exceptionally warm.</span>
+          </div>
 
-            {/* Right: Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {[
-                {
-                  dot: ACCENT, pulse: false,
-                  label: "Why It's Rare", labelColor: ACCENT,
-                  text: "Abundant Blue was a seasonal colorway — here for a moment, then gone. Patagonia doesn't announce retirements. One season it's in the lineup; the next, it isn't. Secondary market listings are sparse, and most that appear are wrong sizes or worn beyond fair condition.",
-                  border: 'rgba(255,255,255,0.06)',
-                },
-                {
-                  dot: ACCENT, pulse: false,
-                  label: 'The Method', labelColor: ACCENT,
-                  text: "Automated daily scans across 14 platforms. Filters: exact colorway, Women's S, fair condition or better. When it surfaces — we'll know within 24 hours. No manual searching. No missed windows.",
-                  border: 'rgba(255,255,255,0.06)',
-                },
-                {
-                  dot: '#4ade80', pulse: true,
-                  label: 'Search Status', labelColor: '#4ade80',
-                  text: "Active. Running daily at 9:30 AM PST. No matches found yet — but patience is the whole strategy. It will appear eventually. We'll be ready.",
-                  border: `rgba(74,124,155,0.18)`,
-                },
-              ].map((card, i) => (
-                <div
-                  key={i}
-                  className="story-card"
-                  style={{
-                    background: BG_CARD,
-                    border: `1px solid ${card.border}`,
-                    borderRadius: '1rem',
-                    padding: '1.5rem 1.625rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.9rem' }}>
-                    <div
-                      className={card.pulse ? 'green-dot' : ''}
-                      style={{
-                        width: '0.45rem', height: '0.45rem',
-                        borderRadius: '50%', background: card.dot, flexShrink: 0,
-                      }}
-                    />
-                    <span style={{
-                      color: card.labelColor, fontSize: '0.62rem',
-                      letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 500,
-                    }}>
-                      {card.label}
-                    </span>
+          {/* Scene text: As Worn */}
+          <div ref={scWorn} style={{
+            position: 'absolute', right: '7vw', top: '50%', transform: 'translateY(-50%)',
+            opacity: 0, zIndex: 30, textAlign: 'right', maxWidth: 280,
+          }}>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>As Worn</span>
+            <span style={{ fontSize: 'clamp(1.8rem, 3vw, 3rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>Women&apos;s Small</span>
+            <span style={{ fontSize: '0.88rem', fontWeight: 300, color: ACCENT, display: 'block', marginBottom: 8 }}>Hooded or Non-hooded</span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>The exact size. The exact color. Somewhere.</span>
+          </div>
+
+          {/* Scene text: Detail */}
+          <div ref={scDetail} style={{
+            position: 'absolute', bottom: '12%', left: '50%', transform: 'translateX(-50%)',
+            opacity: 0, zIndex: 30, textAlign: 'center', maxWidth: 320,
+          }}>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Detail</span>
+            <span style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.5rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>Every Angle</span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>Style 84684 · ABDB · Documented from every perspective.</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════
+          PHASE 3: INFOGRAPHICS / DASHBOARD
+          ══════════════════════════════════════════════ */}
+
+      {/* ── Stats Section ── */}
+      <section ref={statsRef} style={{ padding: '14vh 8vw', maxWidth: 1100, margin: '0 auto' }}>
+        <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 20 }}>
+          The Mission
+        </span>
+        <h2 style={{
+          fontSize: 'clamp(2.2rem, 5vw, 4.5rem)', fontWeight: 200,
+          letterSpacing: '-0.015em', marginBottom: '10vh', lineHeight: 1.08,
+        }}>
+          Searching {data?.totalPlatformsChecked ?? 26} Platforms<br/>
+          <span style={{ color: ACCENT }}>Every Single Day.</span>
+        </h2>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '5vh 4vw',
+        }}>
+          {[
+            ['Days Active', daysSince],
+            ['Platforms', data?.totalPlatformsChecked ?? 26],
+            ['Listings Scanned', totalScanned],
+            ['Exact Matches', data?.exactMatches ?? 0],
+          ].map(([label, value]) => {
+            const count = useCounter(Number(value), statsVisible)
+            const isMatch = label === 'Exact Matches'
+            return (
+              <div key={String(label)} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <span style={{
+                  fontFamily: 'monospace',
+                  fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+                  fontWeight: 200,
+                  color: isMatch && count === 0 ? '#ef4444' : '#fff',
+                  letterSpacing: '-0.02em',
+                }}>{count}</span>
+                <span style={{
+                  fontSize: '0.65rem', letterSpacing: '0.2em',
+                  textTransform: 'uppercase', color: `${ACCENT}88`,
+                }}>{String(label)}</span>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <hr style={{ border: 'none', height: 1, background: `linear-gradient(90deg, transparent, ${ACCENT}28, transparent)`, margin: '0 8vw' }} />
+
+      {/* ── Platform Dashboard ── */}
+      <section style={{ padding: '14vh 8vw' }}>
+        <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 14 }}>
+          Coverage
+        </span>
+        <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 200, marginBottom: '6vh' }}>
+          Platform Dashboard
+        </h2>
+
+        {data && (['retail', 'resale', 'aggregator'] as const).map(cat => {
+          const items = data.platforms.filter(p => p.category === cat)
+          if (!items.length) return null
+          return (
+            <div key={cat} style={{ marginBottom: '5vh' }}>
+              <span style={{
+                fontSize: '0.58rem', letterSpacing: '0.18em',
+                textTransform: 'uppercase', color: `${ACCENT}44`, display: 'block', marginBottom: 14,
+              }}>{cat}</span>
+              <div ref={cat === 'retail' ? platformRef : undefined}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 10 }}>
+                {items.map(p => (
+                  <div key={p.name} className="p-card" style={{
+                    background: '#0c1822', borderRadius: 10, padding: '14px 18px',
+                    border: `1px solid ${p.status === 'near_match' ? `${ACCENT}33` : '#ffffff07'}`,
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 300 }}>{p.name}</span>
+                      <span style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        fontSize: '0.55rem', letterSpacing: '0.1em', color: statusDot(p.status),
+                      }}>
+                        <span style={{
+                          width: 5, height: 5, borderRadius: '50%',
+                          background: statusDot(p.status),
+                        }} />
+                        {statusText(p.status)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#ffffff25' }}>
+                      <span>{p.region}</span>
+                      {p.totalListings > 0 && <span>{p.totalListings} listings</span>}
+                    </div>
+                    {p.notes && <p style={{ fontSize: '0.65rem', color: `${ACCENT}66`, margin: 0, lineHeight: 1.5 }}>{p.notes}</p>}
                   </div>
-                  <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.72, fontSize: '0.9rem' }}>
-                    {card.text}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
+          )
+        })}
       </section>
 
-      {/* ═══════════════════════════ LIVE RESULTS ════════════════════════ */}
-      <section className="results-section" style={{ padding: '7rem 1.5rem', background: BG_DARK }}>
-        <div style={{ maxWidth: '75rem', margin: '0 auto' }}>
+      <hr style={{ border: 'none', height: 1, background: `linear-gradient(90deg, transparent, ${ACCENT}28, transparent)`, margin: '0 8vw' }} />
 
-          <div className="results-header">
-            <div style={{
-              display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-              gap: '0.875rem', marginBottom: '2.5rem',
+      {/* ── Search Timeline ── */}
+      <section style={{ padding: '14vh 8vw', maxWidth: 760, margin: '0 auto' }}>
+        <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 14 }}>
+          History
+        </span>
+        <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 200, marginBottom: '6vh' }}>
+          Search Timeline
+        </h2>
+        <div ref={timelineRef}>
+          {(data?.searchHistory ?? []).map((entry, i, arr) => (
+            <div key={entry.date} className="t-item" style={{
+              display: 'flex', gap: 20, paddingBottom: 32,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <div className="live-dot" style={{ width: '0.45rem', height: '0.45rem', borderRadius: '50%', background: '#ef4444' }} />
-                <span style={{ color: '#f87171', fontSize: '0.62rem', letterSpacing: '0.4em', textTransform: 'uppercase', fontWeight: 600 }}>
-                  Live
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: '50%', marginTop: 3,
+                  background: entry.nearMatches > 0 ? '#f59e0b' : ACCENT,
+                }} />
+                {i < arr.length - 1 && <div style={{ width: 1, flex: 1, background: '#ffffff0d', marginTop: 6 }} />}
+              </div>
+              <div>
+                <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: ACCENT, display: 'block', marginBottom: 10 }}>
+                  Day {i + 1} — {entry.date}
                 </span>
-              </div>
-              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.08)' }} />
-              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>
-                Last scan: Today at 9:30 AM PST
-              </span>
-              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.08)' }} />
-              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>
-                Active for {daysSince} days
-              </span>
-            </div>
-
-            <h2 style={{
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '0.75rem',
-            }}>
-              Search Results
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.88rem', marginBottom: '3.5rem', lineHeight: 1.6 }}>
-              Exact match required: Patagonia Down Sweater · Abundant Blue · Women&#39;s Small · Fair condition or better
-            </p>
-          </div>
-
-          {/* Status card */}
-          <div
-            className="status-card"
-            style={{
-              textAlign: 'center', padding: '5rem 2rem',
-              background: 'linear-gradient(135deg, #0d1820 0%, #0a1015 100%)',
-              border: '1px solid rgba(255,255,255,0.04)',
-              borderRadius: '1.5rem',
-            }}
-          >
-            <div style={{ fontSize: '3.5rem', marginBottom: '1.25rem' }}>🔍</div>
-            <h3 style={{ fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.8rem' }}>
-              No Exact Matches Found
-            </h3>
-            <p style={{
-              color: 'rgba(255,255,255,0.33)', fontSize: '1rem',
-              maxWidth: '28rem', margin: '0 auto 2.5rem', lineHeight: 1.65,
-            }}>
-              Scanning 14 platforms daily at 9:30 AM PST.
-              <br />
-              The search continues — we&#39;ll be ready when it appears.
-            </p>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.75rem' }}>
-              {[
-                { label: '● Active Search',          highlight: true },
-                { label: '14 platforms monitored',   highlight: false },
-                { label: '0 matches to date',        highlight: false },
-              ].map((b, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: '0.4rem',
-                  padding: '0.55rem 1.2rem', borderRadius: '2rem',
-                  fontSize: '0.82rem', fontWeight: b.highlight ? 500 : 400,
-                  border: b.highlight ? `1px solid rgba(74,124,155,0.5)` : '1px solid rgba(255,255,255,0.06)',
-                  color: b.highlight ? ACCENT : 'rgba(255,255,255,0.3)',
-                  background: b.highlight ? 'rgba(74,124,155,0.06)' : 'rgba(255,255,255,0.02)',
-                }}>
-                  {b.label}
+                <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                  {[
+                    [entry.platformsChecked, 'platforms'],
+                    [entry.totalListingsScanned, 'scanned'],
+                    [entry.nearMatches, 'near matches'],
+                  ].map(([v, l]) => (
+                    <div key={String(l)} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <span style={{
+                        fontFamily: 'monospace', fontSize: '1rem',
+                        color: l === 'near matches' && Number(v) > 0 ? '#f59e0b' : '#fff',
+                      }}>{Number(v).toLocaleString()}</span>
+                      <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#ffffff25' }}>{String(l)}</span>
+                    </div>
+                  ))}
                 </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Near Matches ── */}
+      {data?.nearMatchExamples?.length ? (
+        <>
+          <hr style={{ border: 'none', height: 1, background: `linear-gradient(90deg, transparent, #f59e0b28, transparent)`, margin: '0 8vw' }} />
+          <section style={{ padding: '14vh 8vw' }}>
+            <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#f59e0b', display: 'block', marginBottom: 14 }}>
+              Promising Leads
+            </span>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 200, marginBottom: '6vh' }}>
+              Near Matches
+            </h2>
+            <div ref={nearRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+              {data.nearMatchExamples.map((m, i) => (
+                <a key={i} href={m.url} target="_blank" rel="noopener noreferrer"
+                  className="n-card" style={{
+                    display: 'block', background: '#0c1822',
+                    border: '1px solid #f59e0b18', borderRadius: 12, padding: '20px 22px',
+                    textDecoration: 'none', color: 'inherit',
+                    transition: 'border-color 0.2s, transform 0.2s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#f59e0b44'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#f59e0b18'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#f59e0b' }}>{m.platform}</span>
+                    <span style={{ color: '#ffffff20', fontSize: '0.8rem' }}>↗</span>
+                  </div>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 400, display: 'block', marginBottom: 8, color: '#f0f0f0' }}>{m.title}</span>
+                  <span style={{ fontSize: '0.75rem', color: ACCENT, display: 'block', marginBottom: 8 }}>{m.color} · {m.size}</span>
+                  {m.note && <span style={{ fontSize: '0.7rem', color: '#ffffff35', lineHeight: 1.6 }}>{m.note}</span>}
+                </a>
               ))}
             </div>
-          </div>
+          </section>
+        </>
+      ) : null}
 
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'rgba(255,255,255,0.1)', fontSize: '0.72rem' }}>
-            Matches appear here within 24 hours of listing
-          </p>
-        </div>
+      {/* ── Closing ── */}
+      <section style={{
+        padding: '16vh 8vw 12vh',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+        background: `radial-gradient(ellipse 60% 50% at 50% 50%, #0d1e2f 0%, ${BG} 100%)`,
+      }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={IMG.alt} alt="Abundant Blue" style={{
+          width: 'clamp(180px, 30vmin, 380px)', height: 'clamp(180px, 30vmin, 380px)',
+          objectFit: 'contain', marginBottom: '5vh',
+          filter: 'drop-shadow(0 15px 40px rgba(74,124,155,0.1))',
+        }} />
+        <p style={{
+          fontSize: 'clamp(1.5rem, 3.5vw, 3rem)', fontWeight: 200,
+          maxWidth: 520, lineHeight: 1.3, marginBottom: 16,
+        }}>
+          Still searching.<br/><span style={{ color: ACCENT }}>Won&apos;t stop until we find it.</span>
+        </p>
+        <p style={{ fontSize: '0.75rem', color: `${ACCENT}55`, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          Patagonia Women&apos;s Down Sweater · Abundant Blue · Style 84684
+        </p>
       </section>
 
-      {/* ════════════════════════════ PLATFORMS ══════════════════════════ */}
-      <section style={{ padding: '7rem 1.5rem', background: BG_DEEP }}>
-        <div style={{ maxWidth: '75rem', margin: '0 auto' }}>
-          <p style={{
-            color: ACCENT, fontSize: '0.65rem', letterSpacing: '0.42em',
-            textTransform: 'uppercase', marginBottom: '1rem', fontWeight: 500,
-          }}>
-            The Search Network
+      {/* ── Footer ── */}
+      <footer style={{
+        borderTop: '1px solid #ffffff08', padding: '4vh 8vw',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center',
+      }}>
+        <p style={{ fontSize: '0.85rem', color: '#ffffff50' }}>
+          Built by Chef 👨🏼‍🍳 for <span style={{ color: ACCENT }}>@birkasecorba</span>
+        </p>
+        {data && (
+          <p style={{ fontFamily: 'monospace', fontSize: '0.68rem', color: '#ffffff20' }}>
+            Last updated {new Date(data.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            &ensp;·&ensp;{data.totalSearches} search runs
           </p>
-          <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '0.75rem' }}>
-            14 Platforms. Every Day.
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.3)', marginBottom: '3.5rem', fontSize: '0.88rem' }}>
-            Every major resale market, checked every morning. No listing slips through.
-          </p>
-
-          <div
-            className="platforms-grid"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '0.7rem' }}
-          >
-            {PLATFORMS.map((platform, i) => (
-              <div
-                key={platform.name}
-                className="platform-card"
-                style={{
-                  background: BG_CARD, border: '1px solid rgba(255,255,255,0.05)',
-                  borderRadius: '0.875rem', padding: '1.1rem 1.25rem',
-                  transition: 'border-color 0.22s ease, transform 0.22s ease', cursor: 'default',
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.borderColor = 'rgba(74,124,155,0.45)'
-                  el.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.borderColor = 'rgba(255,255,255,0.05)'
-                  el.style.transform = 'translateY(0)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.7rem' }}>
-                  <div
-                    className="green-dot"
-                    style={{
-                      width: '0.38rem', height: '0.38rem', borderRadius: '50%',
-                      background: '#4ade80', animationDelay: `${(i % 7) * 0.18}s`,
-                    }}
-                  />
-                  <span style={{ color: 'rgba(74,222,128,0.55)', fontSize: '0.58rem', letterSpacing: '0.22em', textTransform: 'uppercase' }}>
-                    Active
-                  </span>
-                </div>
-                <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: '0.3rem' }}>
-                  {platform.name}
-                </div>
-                <div style={{ color: 'rgba(255,255,255,0.22)', fontSize: '0.68rem' }}>
-                  {platform.regions.join(' · ')}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{
-            marginTop: '2.5rem', paddingTop: '2rem',
-            borderTop: '1px solid rgba(255,255,255,0.05)',
-            display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-            justifyContent: 'space-between', gap: '1rem',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-              <div className="green-dot" style={{ width: '0.4rem', height: '0.4rem', borderRadius: '50%', background: '#4ade80' }} />
-              <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.85rem' }}>
-                All {PLATFORMS.length} platforms active
-              </span>
-            </div>
-            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.72rem' }}>
-              Next scan: Tomorrow at 9:30 AM PST
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════ FOOTER ═════════════════════════════ */}
-      <footer style={{ padding: '2.5rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.04)', background: BG_DEEP }}>
-        <div
-          className="footer-inner"
-          style={{
-            maxWidth: '75rem', margin: '0 auto',
-            display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-            justifyContent: 'space-between', gap: '1rem',
-          }}
-        >
-          <div style={{ color: 'rgba(255,255,255,0.24)', fontSize: '0.85rem' }}>
-            Built by Chef 👨🏼‍🍳 for @birkasecorba
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-            <div className="green-dot" style={{ width: '0.38rem', height: '0.38rem', borderRadius: '50%', background: '#4ade80' }} />
-            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.72rem' }}>
-              Search active · 9:30 AM PST daily
-            </span>
-          </div>
-        </div>
+        )}
       </footer>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&display=swap');
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin: 0; }
+      `}</style>
     </div>
   )
 }
