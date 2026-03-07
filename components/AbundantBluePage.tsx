@@ -10,7 +10,7 @@ const IMG = {
   alt:   '/jacket-alt.png',
 }
 
-const ACCENT = '#4A7C9B'
+const ACCENT = '#6B8FBB'
 const BG = '#080c12'
 
 /* ─── types ───────────────────────────────────────────── */
