@@ -4,3 +4,9 @@ out/
 .vercel/
 *.log
 .vercel
+
+# Build artifacts
+*.mp4
+ref-*.png
+ref-*.jpg
+preview-*.jpg
