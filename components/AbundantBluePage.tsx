@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Scene3D from './Scene3D'
 
 /* ─── transparent PNGs (white bg removed) ─────────────── */
 const IMG = {
@@ -10,7 +11,7 @@ const IMG = {
   alt:   '/jacket-alt.png',
 }
 
-const ACCENT = '#6B8FBB'
+const ACCENT = '#79B2E6'
 const BG = '#080c12'
 
 /* ─── types ───────────────────────────────────────────── */
@@ -56,7 +57,6 @@ export default function AbundantBluePage() {
 
   // Refs
   const heroRef = useRef<HTMLElement>(null)
-  const heroImgRef = useRef<HTMLImageElement>(null)
   const heroTitleRef = useRef<HTMLDivElement>(null)
   const heroSubRef = useRef<HTMLDivElement>(null)
   const scrollCueRef = useRef<HTMLDivElement>(null)
@@ -90,7 +90,7 @@ export default function AbundantBluePage() {
 
       ctx = gsap.context(() => {
 
-        /* ── HERO: pin + zoom jacket + reveal text ── */
+        /* ── HERO: pin + reveal text (3D scene handles itself) ── */
         const heroTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroRef.current,
@@ -101,8 +101,6 @@ export default function AbundantBluePage() {
             anticipatePin: 1,
           },
         })
-        // Jacket grows
-        heroTl.to(heroImgRef.current, { scale: 1.4, duration: 1, ease: 'none' }, 0)
         // Title in
         heroTl.fromTo(heroTitleRef.current,
           { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.2, ease: 'none' }, 0)
@@ -223,35 +221,28 @@ export default function AbundantBluePage() {
     <div style={{ background: BG, color: '#e8e8e8', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
 
       {/* ══════════════════════════════════════════════
-          PHASE 1: HERO — Jacket on dark bg
+          PHASE 1: HERO — 3D Scene on dark bg
           ══════════════════════════════════════════════ */}
       <section ref={heroRef} style={{
         position: 'relative', height: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden', background: BG,
       }}>
-        {/* Subtle radial glow behind jacket */}
+        {/* Subtle radial glow behind 3D scene */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse 60% 65% at 50% 50%, #0e2035 0%, ${BG} 70%)`,
+          background: `radial-gradient(ellipse 60% 65% at 50% 50%, #1a3247 0%, ${BG} 75%)`,
           pointerEvents: 'none',
         }} />
 
-        {/* Jacket image — transparent PNG, no blend mode needed */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          ref={heroImgRef}
-          src={IMG.flat}
-          alt="Patagonia Down Sweater — Abundant Blue"
-          style={{
-            position: 'relative', zIndex: 5,
-            width: 'clamp(280px, 55vmin, 620px)',
-            height: 'clamp(280px, 55vmin, 620px)',
-            objectFit: 'contain',
-            transformOrigin: 'center center',
-            filter: 'drop-shadow(0 20px 60px rgba(74, 124, 155, 0.15))',
-          }}
-        />
+        {/* 3D Scene */}
+        <Scene3D style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 5,
+        }} />
 
         {/* Title */}
         <div ref={heroTitleRef} style={{
