@@ -53,6 +53,7 @@ function useCounter(target: number, active: boolean, dur = 1.8) {
 /* ═══════════════════════════════════════════════════════ */
 export default function AbundantBluePage() {
   const [data, setData] = useState<SearchData | null>(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
   const [statsVisible, setStatsVisible] = useState(false)
 
   // Refs
@@ -214,7 +215,7 @@ export default function AbundantBluePage() {
   const statusDot = (s: string) =>
     s === 'exact_match' ? '#22c55e' : s === 'near_match' ? '#f59e0b' : s === 'pending' ? '#6b7280' : '#1e3a4f'
   const statusText = (s: string) =>
-    s === 'exact_match' ? 'MATCH' : s === 'near_match' ? 'CLOSE' : s === 'pending' ? 'PENDING' : 'CLEAR'
+    s === 'exact_match' ? 'EXACT MATCH' : s === 'near_match' ? 'NEAR MATCH' : s === 'pending' ? 'CHECKING' : 'CLEAR'
 
   /* ═════ RENDER ═════ */
   return (
@@ -236,7 +237,7 @@ export default function AbundantBluePage() {
         }} />
 
         {/* 3D Scene */}
-        <Scene3D style={{
+        <Scene3D scrollProgress={scrollProgress} style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
@@ -314,7 +315,7 @@ export default function AbundantBluePage() {
           }}>
             {/* Flat */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img ref={scImgFlat} src={IMG.flat} alt="Jacket flat"
+            <img ref={scImgFlat} src={IMG.flat} alt="Patagonia Down Sweater in Abundant Blue, Style 84684, laying flat against white background"
               style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
                 objectFit: 'contain', transformOrigin: 'center center',
@@ -322,7 +323,7 @@ export default function AbundantBluePage() {
               }} />
             {/* Model */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img ref={scImgModel} src={IMG.model} alt="Model wearing jacket"
+            <img ref={scImgModel} src={IMG.model} alt="Model wearing the Abundant Blue down sweater, showing fit and color accuracy"
               style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
                 objectFit: 'contain', opacity: 0, transformOrigin: 'center center',
@@ -330,7 +331,7 @@ export default function AbundantBluePage() {
               }} />
             {/* Back */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img ref={scImgBack} src={IMG.back} alt="Jacket back"
+            <img ref={scImgBack} src={IMG.back} alt="Back view of the jacket showing construction details and Patagonia logo"
               style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
                 objectFit: 'contain', opacity: 0, transformOrigin: 'center center',
@@ -343,14 +344,20 @@ export default function AbundantBluePage() {
             position: 'absolute', left: '7vw', top: '50%', transform: 'translateY(-50%)',
             opacity: 0, zIndex: 30, display: 'flex', flexDirection: 'column', gap: 16,
           }}>
-            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT }}>Specifications</span>
-            {[['Brand','Patagonia'],['Style','84684'],['Color','Abundant Blue'],['Code','ABDB'],
-              ['Size',"Women's Small"],['Fill','800-Fill Down'],['Status','Discontinued']].map(([k,v]) => (
-              <div key={k} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: '0.55rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: `${ACCENT}66` }}>{k}</span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 300 }}>{v}</span>
-              </div>
-            ))}
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT }}>Technical Documentation</span>
+            <h3 style={{ 
+              fontSize: 'clamp(1.8rem, 3vw, 3rem)', 
+              fontWeight: 200, margin: '12px 0 8px 0' 
+            }}>Style 84684</h3>
+            <p style={{ 
+              fontSize: '0.75rem', 
+              color: '#ffffff80', 
+              lineHeight: 1.7, 
+              margin: 0, 
+              maxWidth: 280 
+            }}>
+              Not just blue. Abundant Blue. A specific discontinuation. Color code ABDB. Women's Small. Perfect condition only.
+            </p>
           </div>
 
           {/* Scene text: Fill */}
@@ -358,10 +365,10 @@ export default function AbundantBluePage() {
             position: 'absolute', right: '7vw', top: '50%', transform: 'translateY(-50%)',
             opacity: 0, zIndex: 30, textAlign: 'right', maxWidth: 280,
           }}>
-            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Fill Power</span>
-            <span style={{ fontSize: 'clamp(1.8rem, 3vw, 3rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>800-Fill</span>
-            <span style={{ fontSize: '0.88rem', fontWeight: 300, color: ACCENT, display: 'block', marginBottom: 8 }}>Traceable Down</span>
-            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>Responsibly sourced. Ethically certified. Exceptionally warm.</span>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Performance Characteristics</span>
+            <span style={{ fontSize: 'clamp(1.8rem, 3vw, 3rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>800-Fill Traceable Down</span>
+            <span style={{ fontSize: '0.88rem', fontWeight: 300, color: ACCENT, display: 'block', marginBottom: 8 }}>Responsibly Sourced</span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>Ethically certified. Exceptionally warm. The fill that made this jacket legendary before the color made it impossible to find.</span>
           </div>
 
           {/* Scene text: As Worn */}
@@ -369,10 +376,10 @@ export default function AbundantBluePage() {
             position: 'absolute', right: '7vw', top: '50%', transform: 'translateY(-50%)',
             opacity: 0, zIndex: 30, textAlign: 'right', maxWidth: 280,
           }}>
-            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>As Worn</span>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Real-World Context</span>
             <span style={{ fontSize: 'clamp(1.8rem, 3vw, 3rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>Women&apos;s Small</span>
             <span style={{ fontSize: '0.88rem', fontWeight: 300, color: ACCENT, display: 'block', marginBottom: 8 }}>Hooded or Non-hooded</span>
-            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>The exact size. The exact color. Somewhere.</span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>The exact size. The exact color. Somewhere in someone's closet. Or hanging in a resale shop. Waiting.</span>
           </div>
 
           {/* Scene text: Detail */}
@@ -380,9 +387,10 @@ export default function AbundantBluePage() {
             position: 'absolute', bottom: '12%', left: '50%', transform: 'translateX(-50%)',
             opacity: 0, zIndex: 30, textAlign: 'center', maxWidth: 320,
           }}>
-            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Detail</span>
-            <span style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.5rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>Every Angle</span>
-            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>Style 84684 · ABDB · Documented from every perspective.</span>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 12 }}>Forensic Documentation</span>
+            <span style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.5rem)', fontWeight: 200, display: 'block', marginBottom: 8 }}>Every Angle Catalogued</span>
+            <span style={{ fontSize: '0.88rem', fontWeight: 300, color: ACCENT, display: 'block', marginBottom: 8 }}>Reference Standard</span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff40', lineHeight: 1.7 }}>Style 84684. Color code ABDB. Documented from every perspective. The definitive record of what we're hunting for.</span>
           </div>
         </div>
       </section>
@@ -394,14 +402,13 @@ export default function AbundantBluePage() {
       {/* ── Stats Section ── */}
       <section ref={statsRef} style={{ padding: '14vh 8vw', maxWidth: 1100, margin: '0 auto' }}>
         <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 20 }}>
-          The Mission
+          Mission Metrics
         </span>
         <h2 style={{
           fontSize: 'clamp(2.2rem, 5vw, 4.5rem)', fontWeight: 200,
           letterSpacing: '-0.015em', marginBottom: '10vh', lineHeight: 1.08,
         }}>
-          Searching {data?.totalPlatformsChecked ?? 26} Platforms<br/>
-          <span style={{ color: ACCENT }}>Every Single Day.</span>
+          Searching {data?.totalPlatformsChecked ?? 26} Platforms Every Single Day.
         </h2>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
@@ -409,12 +416,12 @@ export default function AbundantBluePage() {
         }}>
           {[
             ['Days Active', daysSince],
-            ['Platforms', data?.totalPlatformsChecked ?? 26],
+            ['Platforms Monitored', data?.totalPlatformsChecked ?? 26],
             ['Listings Scanned', totalScanned],
-            ['Exact Matches', data?.exactMatches ?? 0],
+            ['Exact Matches Found', data?.exactMatches ?? 0],
           ].map(([label, value]) => {
             const count = useCounter(Number(value), statsVisible)
-            const isMatch = label === 'Exact Matches'
+            const isMatch = label === 'Exact Matches Found'
             return (
               <div key={String(label)} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span style={{
@@ -432,6 +439,15 @@ export default function AbundantBluePage() {
             )
           })}
         </div>
+        <div style={{
+          marginTop: '6vh', 
+          fontSize: '0.75rem', 
+          color: '#ffffff55', 
+          lineHeight: 1.7, 
+          maxWidth: '600px'
+        }}>
+          This is not casual browsing. This is systematic, relentless, algorithmic hunting. Every platform that might possibly have Style 84684 in Abundant Blue gets checked. Daily. Without fail.
+        </div>
       </section>
 
       <hr style={{ border: 'none', height: 1, background: `linear-gradient(90deg, transparent, ${ACCENT}28, transparent)`, margin: '0 8vw' }} />
@@ -439,13 +455,17 @@ export default function AbundantBluePage() {
       {/* ── Platform Dashboard ── */}
       <section style={{ padding: '14vh 8vw' }}>
         <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 14 }}>
-          Coverage
+          Search Network
         </span>
         <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 200, marginBottom: '6vh' }}>
-          Platform Dashboard
+          Platform Coverage
         </h2>
 
-        {data && (['retail', 'resale', 'aggregator'] as const).map(cat => {
+        {data && ([
+          { key: 'retail', label: 'Retail' },
+          { key: 'resale', label: 'Resale' },
+          { key: 'aggregator', label: 'Aggregator' }
+        ] as const).map(({ key: cat, label }) => {
           const items = data.platforms.filter(p => p.category === cat)
           if (!items.length) return null
           return (
@@ -453,7 +473,7 @@ export default function AbundantBluePage() {
               <span style={{
                 fontSize: '0.58rem', letterSpacing: '0.18em',
                 textTransform: 'uppercase', color: `${ACCENT}44`, display: 'block', marginBottom: 14,
-              }}>{cat}</span>
+              }}>{label}</span>
               <div ref={cat === 'retail' ? platformRef : undefined}
                 style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 10 }}>
                 {items.map(p => (
@@ -493,10 +513,10 @@ export default function AbundantBluePage() {
       {/* ── Search Timeline ── */}
       <section style={{ padding: '14vh 8vw', maxWidth: 760, margin: '0 auto' }}>
         <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: ACCENT, display: 'block', marginBottom: 14 }}>
-          History
+          Search Chronicle
         </span>
         <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 200, marginBottom: '6vh' }}>
-          Search Timeline
+          Timeline of the Hunt
         </h2>
         <div ref={timelineRef}>
           {(data?.searchHistory ?? []).map((entry, i, arr) => (
@@ -516,14 +536,14 @@ export default function AbundantBluePage() {
                 </span>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                   {[
-                    [entry.platformsChecked, 'platforms'],
-                    [entry.totalListingsScanned, 'scanned'],
-                    [entry.nearMatches, 'near matches'],
+                    [entry.platformsChecked, 'platforms checked'],
+                    [entry.totalListingsScanned, 'listings scanned'],
+                    [entry.nearMatches, 'near matches found'],
                   ].map(([v, l]) => (
                     <div key={String(l)} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                       <span style={{
                         fontFamily: 'monospace', fontSize: '1rem',
-                        color: l === 'near matches' && Number(v) > 0 ? '#f59e0b' : '#fff',
+                        color: l === 'near matches found' && Number(v) > 0 ? '#f59e0b' : '#fff',
                       }}>{Number(v).toLocaleString()}</span>
                       <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#ffffff25' }}>{String(l)}</span>
                     </div>
@@ -544,8 +564,17 @@ export default function AbundantBluePage() {
               Promising Leads
             </span>
             <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 200, marginBottom: '6vh' }}>
-              Near Matches
+              Near Matches Found
             </h2>
+            <p style={{ 
+              fontSize: '0.75rem', 
+              color: '#ffffff60', 
+              lineHeight: 1.7, 
+              marginBottom: '4vh', 
+              maxWidth: '600px' 
+            }}>
+              Close. So close. But not the one. Each near match teaches us something about where Style 84684 might be hiding.
+            </p>
             <div ref={nearRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
               {data.nearMatchExamples.map((m, i) => (
                 <a key={i} href={m.url} target="_blank" rel="noopener noreferrer"
@@ -564,6 +593,7 @@ export default function AbundantBluePage() {
                   </div>
                   <span style={{ fontSize: '0.95rem', fontWeight: 400, display: 'block', marginBottom: 8, color: '#f0f0f0' }}>{m.title}</span>
                   <span style={{ fontSize: '0.75rem', color: ACCENT, display: 'block', marginBottom: 8 }}>{m.color} · {m.size}</span>
+                  {m.price && <span style={{ fontSize: '0.75rem', color: '#22c55e', display: 'block', marginBottom: 8 }}>{m.price}</span>}
                   {m.note && <span style={{ fontSize: '0.7rem', color: '#ffffff35', lineHeight: 1.6 }}>{m.note}</span>}
                 </a>
               ))}
@@ -588,10 +618,13 @@ export default function AbundantBluePage() {
           fontSize: 'clamp(1.5rem, 3.5vw, 3rem)', fontWeight: 200,
           maxWidth: 520, lineHeight: 1.3, marginBottom: 16,
         }}>
-          Still searching.<br/><span style={{ color: ACCENT }}>Won&apos;t stop until we find it.</span>
+          Still Searching.<br/><span style={{ color: ACCENT }}>Won&apos;t Stop Until We Find It.</span>
         </p>
-        <p style={{ fontSize: '0.75rem', color: `${ACCENT}55`, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <p style={{ fontSize: '0.75rem', color: `${ACCENT}55`, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '3vh' }}>
           Patagonia Women&apos;s Down Sweater · Abundant Blue · Style 84684
+        </p>
+        <p style={{ fontSize: '0.7rem', color: '#ffffff40', lineHeight: 1.6, maxWidth: '480px' }}>
+          Some call it obsession. We call it dedication. Somewhere, someone has exactly what we're looking for. We just have to be patient, systematic, and utterly relentless.
         </p>
       </section>
 
@@ -606,7 +639,7 @@ export default function AbundantBluePage() {
         {data && (
           <p style={{ fontFamily: 'monospace', fontSize: '0.68rem', color: '#ffffff20' }}>
             Last updated {new Date(data.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            &ensp;·&ensp;{data.totalSearches} search runs
+            &ensp;·&ensp;{data.totalSearches} search runs completed
           </p>
         )}
       </footer>
