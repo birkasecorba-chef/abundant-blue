@@ -1,5 +1,4 @@
 'use client'
-import Scene3D from './Scene3D'
 import dynamic from 'next/dynamic'
 
 // Lazy-load 3D/animation components
@@ -70,23 +69,12 @@ const AbundantBluePage = () => {
 
   // Refs for GSAP animations
   const heroTitleRef = useRef<HTMLHeadingElement>(null)
+  const heroImageRef = useRef<HTMLImageElement>(null)
   const productShowcaseRef = useRef<HTMLElement>(null)
   const imageStackRef = useRef<HTMLDivElement>(null)
   const specsRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
   const platformGridRef = useRef<HTMLDivElement>(null)
-
-  const [scrollProgress, setScrollProgress] = useState(0)
-
-  // Track scroll progress for 3D scene
-  useEffect(() => {
-    const handleScroll = () => {
-      const h = document.documentElement.scrollHeight - window.innerHeight
-      setScrollProgress(h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     fetch('/search-data.json')
@@ -110,7 +98,22 @@ const AbundantBluePage = () => {
   useEffect(() => {
     if (!searchData) return
 
-    // Hero title fade out animation
+    // Hero: parallax jacket image on scroll
+    if (heroImageRef.current) {
+      gsap.to(heroImageRef.current, {
+        y: 120,
+        scale: 1.15,
+        opacity: 0,
+        scrollTrigger: {
+          trigger: heroImageRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1
+        }
+      })
+    }
+
+    // Hero title fade out
     if (heroTitleRef.current) {
       gsap.to(heroTitleRef.current, {
         y: -40,
@@ -270,22 +273,39 @@ const AbundantBluePage = () => {
   return (
     <div className="bg-deep-navy text-white relative">
       {/* Global ambient layers */}
-      <FloatingParticles className="fixed inset-0 z-0" />
       <SpotlightBeam className="fixed inset-0 z-[1]" />
 
       {/* 1. HERO SECTION */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
+      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
         <AuroraBackground />
-        <Scene3D scrollProgress={scrollProgress} className="absolute inset-0 z-[2]" />
+        <FloatingParticles className="absolute inset-0 z-[1]" />
+
+        {/* Hero jacket image — visible background element */}
+        <img
+          ref={heroImageRef}
+          src="/gen-hero-jacket.jpg"
+          alt="Patagonia Down Sweater in Abundant Blue"
+          className="absolute inset-0 w-full h-full object-contain z-[2] pointer-events-none opacity-60 scale-[0.65] md:scale-[0.5]"
+        />
+
+        {/* Vignette overlay to blend jacket into background */}
+        <div
+          className="absolute inset-0 z-[3] pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 60% 55% at center 45%, transparent 0%, rgba(10,15,28,0.6) 50%, rgba(10,15,28,1) 75%)',
+          }}
+        />
+
         <div className="relative z-10">
-          <h1 
+          <h1
             ref={heroTitleRef}
             className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight"
+            style={{ textShadow: '0 2px 20px rgba(0,0,0,0.8)' }}
           >
             The Hunt for<br />
-            <span className="text-abundant-blue">Abundant Blue</span>
+            <span className="text-abundant-blue" style={{ textShadow: '0 0 40px rgba(121,178,230,0.4)' }}>Abundant Blue</span>
           </h1>
-          <p className="text-lg md:text-xl text-white/80 mb-16 max-w-2xl">
+          <p className="text-lg md:text-xl text-white/80 mb-16 max-w-2xl" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.6)' }}>
             PATAGONIA DOWN SWEATER · STYLE 84684 · DISCONTINUED
           </p>
           <div className="animate-pulse">
@@ -374,7 +394,7 @@ const AbundantBluePage = () => {
             <img
               src="/gen-color-abstract.jpg"
               alt="Abstract flowing blue silk representing Abundant Blue color"
-              className="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto shadow-2xl object-cover"
+              className="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto shadow-2xl object-cover relative z-10"
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-abundant-blue/20 blur-xl"></div>
