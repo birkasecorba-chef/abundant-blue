@@ -1,4 +1,5 @@
 'use client'
+import Scene3D from './Scene3D'
 
 import React, { useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
@@ -67,6 +68,18 @@ const AbundantBluePage = () => {
   const specsRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
   const platformGridRef = useRef<HTMLDivElement>(null)
+
+  const [scrollProgress, setScrollProgress] = useState(0)
+
+  // Track scroll progress for 3D scene
+  useEffect(() => {
+    const handleScroll = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight
+      setScrollProgress(h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     fetch('/search-data.json')
