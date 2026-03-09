@@ -1,5 +1,12 @@
 'use client'
 import Scene3D from './Scene3D'
+import dynamic from 'next/dynamic'
+
+// Lazy-load 3D/animation components
+const Globe3D = dynamic(() => import('./Globe3D'), { ssr: false })
+const AuroraBackground = dynamic(() => import('./AuroraBackground'), { ssr: false })
+const FloatingParticles = dynamic(() => import('./FloatingParticles'), { ssr: false })
+const SpotlightBeam = dynamic(() => import('./SpotlightBeam'), { ssr: false })
 
 import React, { useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
@@ -346,22 +353,22 @@ const AbundantBluePage = () => {
           <div className="flex items-center justify-center relative">
             <div ref={imageStackRef} className="relative w-full max-w-lg h-auto">
               <img 
-                src="/jacket-flat.png" 
+                src="/paragonsports-84684-abundant-blue-flat-4000px.jpg" 
                 alt="Patagonia Down Sweater in Abundant Blue, Style 84684, laying flat"
                 className="absolute inset-0 w-full h-auto object-contain"
               />
               <img 
-                src="/jacket-model.png" 
+                src="/paragonsports-84684-abundant-blue-model-4000px.jpg" 
                 alt="Patagonia Down Sweater in Abundant Blue, Style 84684, worn by model"
                 className="absolute inset-0 w-full h-auto object-contain"
               />
               <img 
-                src="/jacket-back.png" 
+                src="/paragonsports-84684-abundant-blue-back.jpg" 
                 alt="Patagonia Down Sweater in Abundant Blue, Style 84684, back view"
                 className="absolute inset-0 w-full h-auto object-contain"
               />
               <img 
-                src="/jacket-alt.png" 
+                src="/paragonsports-84684-abundant-blue-detail1.jpg" 
                 alt="Patagonia Down Sweater in Abundant Blue, Style 84684, alternative view"
                 className="w-full h-auto object-contain relative"
               />
