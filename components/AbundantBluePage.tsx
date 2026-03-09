@@ -94,12 +94,10 @@ const AbundantBluePage = () => {
       .then((data: SearchData) => {
         setSearchData(data)
         
-        // Calculate days since search started
         const startDate = new Date(data.searchStarted)
         const now = new Date()
         const daysSearching = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
         
-        // Set initial values (GSAP will animate these)
         setAnimatedCounts({
           totalSearches: data.totalSearches,
           totalPlatformsChecked: data.totalPlatformsChecked,
@@ -130,16 +128,14 @@ const AbundantBluePage = () => {
     if (productShowcaseRef.current && imageStackRef.current) {
       const images = imageStackRef.current.querySelectorAll('img')
       
-      // Pin the showcase section
       ScrollTrigger.create({
         trigger: productShowcaseRef.current,
         start: 'top top',
-        end: '+=300%', // Pin for 3 screen heights
+        end: '+=300%',
         pin: true,
         pinSpacing: true
       })
 
-      // Image transition timeline
       const imageTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: productShowcaseRef.current,
@@ -149,11 +145,9 @@ const AbundantBluePage = () => {
         }
       })
 
-      // Start with first image visible, others hidden
       gsap.set(images, { opacity: 0 })
       gsap.set(images[0], { opacity: 1 })
 
-      // Create crossfade sequence
       images.forEach((img, index) => {
         if (index < images.length - 1) {
           imageTimeline.to(img, {
@@ -168,7 +162,6 @@ const AbundantBluePage = () => {
         }
       })
 
-      // Specs text fade in
       if (specsRef.current) {
         gsap.fromTo(specsRef.current, 
           { opacity: 0, x: -30 },
@@ -196,7 +189,6 @@ const AbundantBluePage = () => {
         start: 'top 85%',
         onEnter: () => {
           statNumbers.forEach((element) => {
-            const target = parseInt(element.getAttribute('data-stat') || '0')
             gsap.from(element, {
               textContent: 0,
               duration: 2,
@@ -228,7 +220,7 @@ const AbundantBluePage = () => {
       )
     }
 
-    // Section fade-ins for all major sections
+    // Section fade-ins
     const sections = gsap.utils.toArray('.fade-in-section')
     sections.forEach((section: any) => {
       gsap.fromTo(section, 
@@ -245,7 +237,6 @@ const AbundantBluePage = () => {
       )
     })
 
-    // Cleanup function
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill())
     }
@@ -277,39 +268,38 @@ const AbundantBluePage = () => {
   }
 
   return (
-    <div className="bg-deep-navy text-white">
+    <div className="bg-deep-navy text-white relative">
+      {/* Global ambient layers */}
+      <FloatingParticles className="fixed inset-0 z-0" />
+      <SpotlightBeam className="fixed inset-0 z-[1]" />
+
       {/* 1. HERO SECTION */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4">
-        <h1 
-          ref={heroTitleRef}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight"
-        >
-          The Hunt for<br />
-          <span className="text-abundant-blue">Abundant Blue</span>
-        </h1>
-        <p className="text-lg md:text-xl text-white/80 mb-16 max-w-2xl">
-          PATAGONIA DOWN SWEATER · STYLE 84684 · DISCONTINUED
-        </p>
-        <div className="animate-pulse">
-          <svg className="w-6 h-6 text-abundant-blue scroll-indicator" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
+      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
+        <AuroraBackground />
+        <Scene3D scrollProgress={scrollProgress} className="absolute inset-0 z-[2]" />
+        <div className="relative z-10">
+          <h1 
+            ref={heroTitleRef}
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight"
+          >
+            The Hunt for<br />
+            <span className="text-abundant-blue">Abundant Blue</span>
+          </h1>
+          <p className="text-lg md:text-xl text-white/80 mb-16 max-w-2xl">
+            PATAGONIA DOWN SWEATER · STYLE 84684 · DISCONTINUED
+          </p>
+          <div className="animate-pulse">
+            <svg className="w-6 h-6 text-abundant-blue mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </div>
         </div>
-        <style jsx>{`
-          .scroll-indicator {
-            animation: pulse 2s infinite;
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; transform: translateY(0); }
-            50% { opacity: 0.5; transform: translateY(8px); }
-          }
-        `}</style>
       </section>
 
       {/* 2. PRODUCT SHOWCASE - PINNED WITH IMAGE TRANSITIONS */}
       <section 
         ref={productShowcaseRef}
-        className="min-h-screen flex items-center justify-center px-4 lg:px-16"
+        className="min-h-screen flex items-center justify-center px-4 lg:px-16 relative z-10"
       >
         <div className="max-w-7xl w-full grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div ref={specsRef} className="space-y-6">
@@ -346,31 +336,31 @@ const AbundantBluePage = () => {
             </div>
             
             <p className="text-white/70 leading-relaxed">
-              Not just blue. Abundant Blue. A specific discontinuation. Color code ABDB. Women's Small. Perfect condition only.
+              Not just blue. Abundant Blue. A specific discontinuation. Color code ABDB. Women&apos;s Small. Perfect condition only.
             </p>
           </div>
           
           <div className="flex items-center justify-center relative">
-            <div ref={imageStackRef} className="relative w-full max-w-lg h-auto">
+            <div ref={imageStackRef} className="relative w-full max-w-lg aspect-[4/5]">
               <img 
-                src="/paragonsports-84684-abundant-blue-flat-4000px.jpg" 
-                alt="Patagonia Down Sweater in Abundant Blue, Style 84684, laying flat"
-                className="absolute inset-0 w-full h-auto object-contain"
+                src="/gen-hero-jacket.jpg" 
+                alt="Patagonia Down Sweater in Abundant Blue — front view, floating in dark space"
+                className="absolute inset-0 w-full h-full object-contain"
               />
               <img 
-                src="/paragonsports-84684-abundant-blue-model-4000px.jpg" 
-                alt="Patagonia Down Sweater in Abundant Blue, Style 84684, worn by model"
-                className="absolute inset-0 w-full h-auto object-contain"
+                src="/gen-jacket-back.jpg" 
+                alt="Patagonia Down Sweater in Abundant Blue — back view"
+                className="absolute inset-0 w-full h-full object-contain"
               />
               <img 
-                src="/paragonsports-84684-abundant-blue-back.jpg" 
-                alt="Patagonia Down Sweater in Abundant Blue, Style 84684, back view"
-                className="absolute inset-0 w-full h-auto object-contain"
+                src="/gen-jacket-detail.jpg" 
+                alt="Patagonia Down Sweater in Abundant Blue — quilting detail close-up"
+                className="absolute inset-0 w-full h-full object-contain"
               />
               <img 
-                src="/paragonsports-84684-abundant-blue-detail1.jpg" 
-                alt="Patagonia Down Sweater in Abundant Blue, Style 84684, alternative view"
-                className="w-full h-auto object-contain relative"
+                src="/gen-jacket-lifestyle.jpg" 
+                alt="Patagonia Down Sweater in Abundant Blue — outdoor lifestyle shot"
+                className="w-full h-full object-contain relative"
               />
             </div>
           </div>
@@ -378,10 +368,17 @@ const AbundantBluePage = () => {
       </section>
 
       {/* 3. COLOR STORY */}
-      <section className="min-h-screen flex items-center justify-center px-4 fade-in-section">
+      <section className="min-h-screen flex items-center justify-center px-4 fade-in-section relative z-10">
         <div className="text-center max-w-4xl w-full">
-          <div className="mb-8">
-            <div className="w-32 h-32 md:w-48 md:h-48 bg-abundant-blue rounded-full mx-auto mb-6 shadow-2xl"></div>
+          <div className="mb-8 relative">
+            <img
+              src="/gen-color-abstract.jpg"
+              alt="Abstract flowing blue silk representing Abundant Blue color"
+              className="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto shadow-2xl object-cover"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-abundant-blue/20 blur-xl"></div>
+            </div>
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold mb-4">Abundant Blue</h2>
@@ -390,14 +387,14 @@ const AbundantBluePage = () => {
           
           <p className="text-white/70 leading-relaxed max-w-2xl mx-auto">
             A vibrant blue-purple that caught the light just right. Not navy, not royal, not cerulean. 
-            This specific shade that made people stop and ask "what color is that jacket?" 
+            This specific shade that made people stop and ask &ldquo;what color is that jacket?&rdquo; 
             Now discontinued. Now impossible to find. Now the object of systematic search.
           </p>
         </div>
       </section>
 
       {/* 4. FILL POWER */}
-      <section className="min-h-[80vh] flex items-center justify-center px-4 fade-in-section">
+      <section className="min-h-[80vh] flex items-center justify-center px-4 fade-in-section relative z-10">
         <div className="text-center max-w-4xl w-full">
           <div className="text-sm text-white/60 uppercase tracking-wider mb-4">Performance Characteristics</div>
           <h2 className="text-4xl md:text-5xl font-bold mb-8">
@@ -430,14 +427,19 @@ const AbundantBluePage = () => {
         </div>
       </section>
 
-      {/* 5. SEARCH DASHBOARD */}
-      <section className="py-16 px-4 fade-in-section">
+      {/* 5. SEARCH DASHBOARD with Globe */}
+      <section className="py-16 px-4 fade-in-section relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-sm text-white/60 uppercase tracking-wider mb-4">Mission Metrics</div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Searching {animatedCounts.totalPlatformsChecked} Platforms Every Single Day
             </h2>
+          </div>
+
+          {/* Globe visualization */}
+          <div className="mb-12">
+            <Globe3D className="mx-auto" />
           </div>
           
           {/* Stats Row */}
@@ -490,7 +492,7 @@ const AbundantBluePage = () => {
       </section>
 
       {/* 6. NEAR MATCHES */}
-      <section className="py-16 px-4 bg-card-bg/30 fade-in-section">
+      <section className="py-16 px-4 bg-card-bg/30 fade-in-section relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-sm text-white/60 uppercase tracking-wider mb-4">Promising Leads</div>
@@ -531,7 +533,7 @@ const AbundantBluePage = () => {
       </section>
 
       {/* 7. TIMELINE */}
-      <section className="py-16 px-4 fade-in-section">
+      <section className="py-16 px-4 fade-in-section relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-sm text-white/60 uppercase tracking-wider mb-4">Search Chronicle</div>
@@ -567,11 +569,11 @@ const AbundantBluePage = () => {
       </section>
 
       {/* 8. FOOTER */}
-      <footer className="py-16 px-4 border-t border-white/10 fade-in-section">
+      <footer className="py-16 px-4 border-t border-white/10 fade-in-section relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">The search continues.</h2>
           <p className="text-white/70 mb-6">
-            Patagonia Women's Down Sweater • Abundant Blue • Style 84684
+            Patagonia Women&apos;s Down Sweater • Abundant Blue • Style 84684
           </p>
           <div className="text-sm text-white/60">
             Last updated {formatDate(searchData.lastUpdated)} • {searchData.totalPlatformsChecked} platforms monitored
